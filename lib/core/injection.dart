@@ -1,0 +1,175 @@
+import 'package:dio/dio.dart';
+import 'package:eato_delivery_partner/core/network/dio_client.dart';
+import 'package:eato_delivery_partner/core/network/network_cubit.dart';
+import 'package:eato_delivery_partner/core/network/network_service.dart';
+import 'package:eato_delivery_partner/data/dataSource/authentication/current_customer_remote_data_source.dart';
+import 'package:eato_delivery_partner/data/dataSource/authentication/rolesPost_dataSource.dart';
+import 'package:eato_delivery_partner/data/dataSource/authentication/signin_remote_data_source.dart';
+import 'package:eato_delivery_partner/data/dataSource/authentication/signup_remote_data_source.dart';
+import 'package:eato_delivery_partner/data/dataSource/authentication/trigger_otp_remote_data_source.dart';
+import 'package:eato_delivery_partner/data/dataSource/authentication/update_current_customer_dataSource.dart';
+import 'package:eato_delivery_partner/data/dataSource/location/location_remotedatasource.dart';
+import 'package:eato_delivery_partner/data/repoImpl/authentication/current_customer_repository_impl.dart';
+import 'package:eato_delivery_partner/data/repoImpl/authentication/rolesPost_repoImpl.dart';
+import 'package:eato_delivery_partner/data/repoImpl/authentication/signin_repository_impl.dart';
+import 'package:eato_delivery_partner/data/repoImpl/authentication/signup_repository_impl.dart';
+import 'package:eato_delivery_partner/data/repoImpl/authentication/trigger_otp_repository_impl.dart';
+import 'package:eato_delivery_partner/data/repoImpl/authentication/update_current_customer_repoImpl.dart';
+import 'package:eato_delivery_partner/data/repoImpl/location/location_repoImpl.dart';
+import 'package:eato_delivery_partner/domain/repository/authentication/current_customer_repository.dart';
+import 'package:eato_delivery_partner/domain/repository/authentication/rolesPost_repository.dart';
+import 'package:eato_delivery_partner/domain/repository/authentication/signin_repository.dart';
+import 'package:eato_delivery_partner/domain/repository/authentication/signup_repository.dart';
+import 'package:eato_delivery_partner/domain/repository/authentication/trigger_otp_repository.dart';
+import 'package:eato_delivery_partner/domain/repository/authentication/update_current_customer_repository.dart';
+import 'package:eato_delivery_partner/domain/repository/location/location_repo.dart';
+import 'package:eato_delivery_partner/domain/usecase/authentication/current_customer_usecase.dart';
+import 'package:eato_delivery_partner/domain/usecase/authentication/rolesPost_usecase.dart';
+import 'package:eato_delivery_partner/domain/usecase/authentication/signin_usecase.dart';
+import 'package:eato_delivery_partner/domain/usecase/authentication/signup_usecase.dart';
+import 'package:eato_delivery_partner/domain/usecase/authentication/trigger_otp_usecase.dart';
+import 'package:eato_delivery_partner/domain/usecase/authentication/update_current_customer_usecase.dart';
+import 'package:eato_delivery_partner/domain/usecase/location/location_usecase.dart';
+import 'package:eato_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_cubit.dart';
+import 'package:eato_delivery_partner/presentation/cubit/authentication/currentcustomer/update/update_current_customer_cubit.dart';
+import 'package:eato_delivery_partner/presentation/cubit/authentication/login/trigger_otp_cubit.dart';
+import 'package:eato_delivery_partner/presentation/cubit/authentication/roles/rolesPost_cubit.dart';
+import 'package:eato_delivery_partner/presentation/cubit/authentication/signUp/signup_cubit.dart';
+import 'package:eato_delivery_partner/presentation/cubit/authentication/signin/sigin_cubit.dart';
+import 'package:eato_delivery_partner/presentation/cubit/location/location_cubit.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get_it/get_it.dart';
+import 'package:http/http.dart' as http;
+
+final GetIt sl = GetIt.instance;
+
+void init() {
+  sl.registerLazySingleton<Dio>(() => Dio());
+  sl.registerLazySingleton(() => const FlutterSecureStorage());
+  sl.registerLazySingleton(() => NetworkService());
+  sl.registerLazySingleton<DioClient>(
+    () => DioClient(sl<Dio>(), secureStorage: sl<FlutterSecureStorage>()),
+  );
+
+  //network
+  sl.registerFactory<NetworkCubit>(() => NetworkCubit());
+
+  sl.registerLazySingleton<TriggerOtpRemoteDataSource>(
+    () => TriggerOtpRemoteDataSourceImpl(client: sl<DioClient>().dio),
+  );
+  sl.registerLazySingleton<TriggerOtpRepository>(
+    () => TriggerOtpRepositoryImpl(
+        remoteDataSource: sl<TriggerOtpRemoteDataSource>()),
+  );
+  sl.registerLazySingleton(
+    () => TriggerOtpValidationUseCase(repository: sl<TriggerOtpRepository>()),
+  );
+  sl.registerFactory(() => TriggerOtpCubit(
+        useCase: sl<TriggerOtpValidationUseCase>(),
+        networkService: sl<NetworkService>(),
+      ));
+
+//signin
+
+  sl.registerLazySingleton<SignInRemoteDataSource>(
+    () => SignInRemoteDataSourceImpl(client: sl<DioClient>().dio),
+  );
+  sl.registerLazySingleton<SignInRepository>(
+    () => SignInRepositoryImpl(remoteDataSource: sl<SignInRemoteDataSource>()),
+  );
+  sl.registerLazySingleton(
+    () => SignInValidationUseCase(repository: sl<SignInRepository>()),
+  );
+  sl.registerFactory(() => SignInCubit(
+        useCase: sl<SignInValidationUseCase>(),
+        networkService: sl<NetworkService>(),
+        // createCartCubit: sl(),
+      ));
+
+  //signup
+
+  sl.registerLazySingleton<SignUpRemoteDataSource>(
+    () => SignUpRemoteDataSourceImpl(client: sl<DioClient>().dio),
+  );
+  sl.registerLazySingleton<SignUpRepository>(
+    () => SignUpRepositoryImpl(remoteDataSource: sl<SignUpRemoteDataSource>()),
+  );
+  sl.registerLazySingleton(
+    () => SignUpValidationUseCase(repository: sl<SignUpRepository>()),
+  );
+  sl.registerFactory(() => SignUpCubit(
+        useCase: sl<SignUpValidationUseCase>(),
+        networkService: sl<NetworkService>(),
+      ));
+
+  //RolePost
+  sl.registerLazySingleton<RolePostRemoteDatasource>(
+    () => RolePostRemoteDataSourceImpl(client: sl<DioClient>().dio),
+  );
+
+  sl.registerLazySingleton<RolePostRepository>(
+    () => RolePostRepoImpl(remoteDataSource: sl<RolePostRemoteDatasource>()),
+  );
+  sl.registerLazySingleton(
+    () => RolePostUsecase(sl<RolePostRepository>()),
+  );
+
+  sl.registerFactory(
+      () => RolePostCubit(sl<RolePostUsecase>(), sl<NetworkService>()));
+
+  //currentcustomer
+
+  sl.registerLazySingleton<CurrentCustomerRemoteDataSource>(
+    () => CurrentCustomerRemoteDataSourceImpl(client: sl<DioClient>().dio),
+  );
+  sl.registerLazySingleton<CurrentCustomerRepository>(
+    () => CurrentCustomerRepositoryImpl(
+        remoteDataSource: sl<CurrentCustomerRemoteDataSource>()),
+  );
+  sl.registerLazySingleton(
+    () => CurrentCustomerValidationUseCase(sl<CurrentCustomerRepository>()),
+  );
+  sl.registerFactory(() => CurrentCustomerCubit(
+      sl<CurrentCustomerValidationUseCase>(), sl<NetworkService>()));
+
+  //location//
+
+  sl.registerLazySingleton<LocationRemoteDataSource>(
+    () => LocationRemoteDataSourceImpl(client: http.Client()),
+  );
+  sl.registerLazySingleton<LocationRepository>(
+    () => LocationRepositoryImpl(
+        remoteDataSource: sl<LocationRemoteDataSource>(),
+        latLangRemoteDataSource: sl<LocationRemoteDataSource>()),
+  );
+  sl.registerLazySingleton(
+    () => LocationUsecase(
+        repository: sl<LocationRepository>(),
+        latLongRepository: sl<LocationRepository>()),
+  );
+  sl.registerFactory(() => LocationCubit(
+        usecase: sl<LocationUsecase>(),
+        networkService: sl<NetworkService>(),
+      ));
+
+  //UpdateCurrentCustomer
+
+  sl.registerLazySingleton<UpdateCurrentCustomerRemoteDatasource>(
+    () =>
+        UpdateCurrentCustomerRemoteDataSourceImpl(client: sl<DioClient>().dio),
+  );
+  sl.registerLazySingleton<UpdateCurrentCustomerRepository>(
+    () => UpdateCurrentCustomerRepositoryImpl(
+        remoteDatasource: sl<UpdateCurrentCustomerRemoteDatasource>()),
+  );
+  sl.registerLazySingleton(
+    () => UpdateCurrentCustomerUseCase(
+        repository: sl<UpdateCurrentCustomerRepository>()),
+  );
+  sl.registerFactory(() => UpdateCurrentCustomerCubit(
+        useCase: sl<UpdateCurrentCustomerUseCase>(),
+        networkService: sl<NetworkService>(),
+      ));
+
+ 
+}
