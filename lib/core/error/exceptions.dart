@@ -1,0 +1,1 @@
+class ServiceException implements Exception{}
