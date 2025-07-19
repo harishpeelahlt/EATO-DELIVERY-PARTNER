@@ -10,3 +10,5 @@ const deleteAccountUrl = 'usermgmt/user/skillrat';
 
 const rolePostUrl = 'user/user';
 
+//partner
+const registrationUrl = 'delivery/api/partners';

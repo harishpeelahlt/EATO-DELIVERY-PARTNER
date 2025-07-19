@@ -14,6 +14,10 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>eato_delivery_partner</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location to assign delivery routes and track your delivery.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>This app uses your location in the background to update delivery status.</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -29,16 +33,20 @@
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>LSApplicationQueriesSchemes</key>
-<array>
-  <string>tel</string>
-</array>
-
+	<array>
+  	<string>tel</string>
+	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>UIBackgroundModes</key>
+		<array>
+    <string>location</string>
+</array>
+
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

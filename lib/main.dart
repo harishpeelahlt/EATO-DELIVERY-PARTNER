@@ -7,6 +7,7 @@ import 'package:eato_delivery_partner/presentation/cubit/authentication/roles/ro
 import 'package:eato_delivery_partner/presentation/cubit/authentication/signUp/signup_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/signin/sigin_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/location/location_cubit.dart';
+import 'package:eato_delivery_partner/presentation/cubit/registration/registration_cubit.dart';
 import 'package:eato_delivery_partner/presentation/screens/authentication/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -41,6 +42,8 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (_) => di.sl<LocationCubit>()),
         BlocProvider(create: (_) => di.sl<RolePostCubit>()),
         BlocProvider(create: (_) => di.sl<DeleteAccountCubit>()),
+        BlocProvider(create: (_) => di.sl<RegistrationCubit>()),
+
       ],
       child: MaterialApp(
         title: 'Eato',

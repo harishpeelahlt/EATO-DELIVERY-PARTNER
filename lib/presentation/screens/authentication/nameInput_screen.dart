@@ -11,7 +11,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class NameInputScreen extends StatefulWidget {
   final String? initialEmail;
-  
+
   const NameInputScreen({super.key, this.initialEmail});
 
   @override
@@ -22,6 +22,8 @@ class _NameInputScreenState extends State<NameInputScreen> {
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
   late TextEditingController _emailController;
+  late TextEditingController _vehicleNumberlController;
+
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -30,6 +32,7 @@ class _NameInputScreenState extends State<NameInputScreen> {
     _firstNameController = TextEditingController(text: '');
     _lastNameController = TextEditingController(text: '');
     _emailController = TextEditingController(text: widget.initialEmail ?? '');
+    _vehicleNumberlController = TextEditingController(text: '');
   }
 
   @override
@@ -37,6 +40,7 @@ class _NameInputScreenState extends State<NameInputScreen> {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
+    _vehicleNumberlController.dispose();
     super.dispose();
   }
 
@@ -63,7 +67,6 @@ class _NameInputScreenState extends State<NameInputScreen> {
           );
         }
       },
-
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: CustomAppBar(
@@ -115,7 +118,6 @@ class _NameInputScreenState extends State<NameInputScreen> {
                     },
                   ),
                 ),
-
                 const SizedBox(height: 24),
                 const Text(
                   'Last Name',
@@ -187,8 +189,51 @@ class _NameInputScreenState extends State<NameInputScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your email';
                       }
-                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                          .hasMatch(value)) {
                         return 'Please enter a valid email';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Vehicle Number',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: TextFormField(
+                    controller: _vehicleNumberlController,
+                    style: const TextStyle(fontSize: 16),
+                    textCapitalization: TextCapitalization.characters,
+                    decoration: const InputDecoration(
+                      hintText: 'Enter vehicle number',
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
+                      hintStyle: TextStyle(color: Colors.grey),
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(
+                          RegExp(r'[A-Za-z0-9 ]')),
+                      LengthLimitingTextInputFormatter(15),
+                      UpperCaseTextFormatter(), // 👈 custom formatter for uppercase
+                    ],
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your vehicle number';
                       }
                       return null;
                     },
@@ -212,10 +257,9 @@ class _NameInputScreenState extends State<NameInputScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 30),
                 SizedBox(
-                  width: double.infinity,
+                    width: double.infinity,
                     child: BlocBuilder<UpdateCurrentCustomerCubit,
                         UpdateCurrentCustomerState>(
                       builder: (context, state) {
@@ -228,9 +272,7 @@ class _NameInputScreenState extends State<NameInputScreen> {
                           ),
                         );
                       },
-                    )
-
-                ),
+                    )),
               ],
             ),
           ),
@@ -241,15 +283,31 @@ class _NameInputScreenState extends State<NameInputScreen> {
 
   void _saveChanges() {
     if (_formKey.currentState!.validate()) {
-      final fullName = '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}'.trim();
+      final fullName =
+          '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}'
+              .trim();
       final payload = {
         'fullName': fullName,
         'email': _emailController.text.trim(),
         'eato': true,
         "fcmToken": ''
       };
-      
-      context.read<UpdateCurrentCustomerCubit>().updateCustomer(payload, context);
+
+      context
+          .read<UpdateCurrentCustomerCubit>()
+          .updateCustomer(payload, context);
     }
+  }
+}
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    return newValue.copyWith(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
+    );
   }
 }
