@@ -9,6 +9,7 @@ import 'package:eato_delivery_partner/data/dataSource/authentication/signup_remo
 import 'package:eato_delivery_partner/data/dataSource/authentication/trigger_otp_remote_data_source.dart';
 import 'package:eato_delivery_partner/data/dataSource/authentication/update_current_customer_dataSource.dart';
 import 'package:eato_delivery_partner/data/dataSource/location/location_remotedatasource.dart';
+import 'package:eato_delivery_partner/data/dataSource/registration/registration_dataSource.dart';
 import 'package:eato_delivery_partner/data/repoImpl/authentication/current_customer_repository_impl.dart';
 import 'package:eato_delivery_partner/data/repoImpl/authentication/rolesPost_repoImpl.dart';
 import 'package:eato_delivery_partner/data/repoImpl/authentication/signin_repository_impl.dart';
@@ -16,6 +17,7 @@ import 'package:eato_delivery_partner/data/repoImpl/authentication/signup_reposi
 import 'package:eato_delivery_partner/data/repoImpl/authentication/trigger_otp_repository_impl.dart';
 import 'package:eato_delivery_partner/data/repoImpl/authentication/update_current_customer_repoImpl.dart';
 import 'package:eato_delivery_partner/data/repoImpl/location/location_repoImpl.dart';
+import 'package:eato_delivery_partner/data/repoImpl/registration/registration_repoImpl.dart';
 import 'package:eato_delivery_partner/domain/repository/authentication/current_customer_repository.dart';
 import 'package:eato_delivery_partner/domain/repository/authentication/rolesPost_repository.dart';
 import 'package:eato_delivery_partner/domain/repository/authentication/signin_repository.dart';
@@ -23,6 +25,7 @@ import 'package:eato_delivery_partner/domain/repository/authentication/signup_re
 import 'package:eato_delivery_partner/domain/repository/authentication/trigger_otp_repository.dart';
 import 'package:eato_delivery_partner/domain/repository/authentication/update_current_customer_repository.dart';
 import 'package:eato_delivery_partner/domain/repository/location/location_repo.dart';
+import 'package:eato_delivery_partner/domain/repository/registration/registration_repository.dart';
 import 'package:eato_delivery_partner/domain/usecase/authentication/current_customer_usecase.dart';
 import 'package:eato_delivery_partner/domain/usecase/authentication/rolesPost_usecase.dart';
 import 'package:eato_delivery_partner/domain/usecase/authentication/signin_usecase.dart';
@@ -30,6 +33,7 @@ import 'package:eato_delivery_partner/domain/usecase/authentication/signup_useca
 import 'package:eato_delivery_partner/domain/usecase/authentication/trigger_otp_usecase.dart';
 import 'package:eato_delivery_partner/domain/usecase/authentication/update_current_customer_usecase.dart';
 import 'package:eato_delivery_partner/domain/usecase/location/location_usecase.dart';
+import 'package:eato_delivery_partner/domain/usecase/registration/registration_usecase.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/currentcustomer/update/update_current_customer_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/login/trigger_otp_cubit.dart';
@@ -37,6 +41,7 @@ import 'package:eato_delivery_partner/presentation/cubit/authentication/roles/ro
 import 'package:eato_delivery_partner/presentation/cubit/authentication/signUp/signup_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/signin/sigin_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/location/location_cubit.dart';
+import 'package:eato_delivery_partner/presentation/cubit/registration/registration_cubit.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
@@ -171,5 +176,19 @@ void init() {
         networkService: sl<NetworkService>(),
       ));
 
- 
+//Registration
+
+  sl.registerLazySingleton<RegistrationRemoteDataSource>(
+    () => RegistrationRemoteDataSourceImpl(client: sl<DioClient>().dio),
+  );
+  sl.registerLazySingleton<RegistrationRepository>(
+    () => RegistrationRepositoryImpl(
+        remoteDataSource: sl<RegistrationRemoteDataSource>()),
+  );
+  sl.registerLazySingleton(
+    () => RegistrationUseCase(repository: sl<RegistrationRepository>()),
+  );
+  sl.registerFactory(() => RegistrationCubit(
+        sl<RegistrationUseCase>(),
+      ));
 }

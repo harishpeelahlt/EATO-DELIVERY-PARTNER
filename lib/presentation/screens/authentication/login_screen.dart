@@ -4,12 +4,10 @@ import 'package:eato_delivery_partner/core/constants/colors.dart';
 import 'package:eato_delivery_partner/core/constants/img_const.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/login/trigger_otp_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/login/trigger_otp_state.dart';
-import 'package:eato_delivery_partner/presentation/screens/dashboard/deliveryPartnerDashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/injection.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -29,7 +27,6 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
 
-    // Make status bar transparent
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
@@ -274,32 +271,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                   );
                                 },
-                              ),
-                              const SizedBox(height: 12),
-                              GestureDetector(
-                                onTap: () async {
-                                  final prefs =
-                                      await SharedPreferences.getInstance();
-                                  await prefs.setBool('isGuest', true);
-                                  await prefs.remove('TOKEN');
-                                  if (!mounted) return;
-                                  Navigator.pushAndRemoveUntil(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          const DeliveryPartnerDashboard(),
-                                    ),
-                                    (route) => false,
-                                  );
-                                },
-                                child: Text(
-                                  "Continue as Guest",
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.grey.shade700,
-                                  ),
-                                ),
                               ),
                             ],
                           ),

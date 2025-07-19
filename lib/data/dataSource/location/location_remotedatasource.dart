@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'package:eato_delivery_partner/data/model/authentication/location/lattitude_longitude_model.dart';
-import 'package:eato_delivery_partner/data/model/authentication/location/location_model.dart';
+import 'package:eato_delivery_partner/data/model/location/lattitude_longitude_model.dart';
+import 'package:eato_delivery_partner/data/model/location/location_model.dart';
 import 'package:http/http.dart' as http;
 
 
