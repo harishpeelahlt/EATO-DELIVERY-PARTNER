@@ -64,7 +64,7 @@ class CurrentCustomerModel {
         "id": id,
         "fullName": fullName,
         "email": email,
-        "roles": roles.map((x) => x?.toJson()).toList(),
+        "roles": roles.map((x) => x.toJson()).toList(),
         "primaryContact": primaryContact,
         "creationTime": creationTime?.toIso8601String(),
         "token": token,

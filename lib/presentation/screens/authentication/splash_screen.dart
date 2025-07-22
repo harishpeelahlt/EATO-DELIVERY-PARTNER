@@ -97,7 +97,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
         if (state is CurrentCustomerLoaded) {
           final model = state.currentCustomerModel;
-          final roles = model.roles?.map((r) => r.name).toList() ?? [];
+          final roles = model.roles.map((r) => r.name).toList();
           final hasDeliveryRole = roles.contains('ROLE_DELIVERY_PARTNER');
           final isDeliveryPartner = model.deliveryPartner ?? false;
 
