@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "791268615472",
+    "project_id": "eato-delivery-partner",
+    "storage_bucket": "eato-delivery-partner.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:791268615472:android:7450364ec97a7b1015d4f5",
+        "android_client_info": {
+          "package_name": "com.eato_delivery_partner"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAc9kt0yKhQ_8vSiadKZvddZhVOjoQjv7I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

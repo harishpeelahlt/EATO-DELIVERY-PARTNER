@@ -1,4 +1,4 @@
-package com.example.eato_delivery_partner
+package com.eato_delivery_partner
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,7 +1,10 @@
 import 'dart:ui';
 import 'package:eato_delivery_partner/core/constants/img_const.dart';
+import 'package:eato_delivery_partner/presentation/cubit/availability/availability_cubit.dart';
+import 'package:eato_delivery_partner/presentation/cubit/availability/availability_state.dart';
 import 'package:eato_delivery_partner/presentation/screens/profile/deliveryPartnerProfile_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -16,38 +19,39 @@ class DeliveryPartnerDashboard extends StatefulWidget {
 class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool isOnline = true;
 
   final List<Map<String, String>> _orders = [
-    // {
-    //   "id": "#EATO1234",
-    //   "status": "New",
-    //   "pickup": "Pizza Hub, Hitech City",
-    //   "delivery": "Jubilee Hills, Hyderabad",
-    //   "price": "₹299",
-    //   "time": "Today • 1:00 PM",
-    //   "eta": "25 - 30 min",
-    //   "phone": "9876543210"
-    // },
-    // {
-    //   "id": "#EATO1235",
-    //   "status": "Accepted",
-    //   "pickup": "Biryani Nation, Gachibowli",
-    //   "delivery": "Madhapur, Hyderabad",
-    //   "price": "₹399",
-    //   "time": "Today • 12:40 PM",
-    //   "eta": "15 - 20 min",
-    //   "phone": "9876543211"
-    // },
-    // {
-    //   "id": "#EATO1236",
-    //   "status": "Delivered",
-    //   "pickup": "KFC, Gachibowli",
-    //   "delivery": "Dilsukhnagar, Hyderabad",
-    //   "price": "₹249",
-    //   "time": "Today • 12:10 PM",
-    //   "eta": "Delivered",
-    //   "phone": "9876543212"
-    // },
+    {
+      "id": "#EATO1234",
+      "status": "New",
+      "pickup": "Pizza Hub, Hitech City",
+      "delivery": "Jubilee Hills, Hyderabad",
+      "price": "₹299",
+      "time": "Today • 1:00 PM",
+      "eta": "25 - 30 min",
+      "phone": "9876543210"
+    },
+    {
+      "id": "#EATO1235",
+      "status": "Accepted",
+      "pickup": "Biryani Nation, Gachibowli",
+      "delivery": "Madhapur, Hyderabad",
+      "price": "₹399",
+      "time": "Today • 12:40 PM",
+      "eta": "15 - 20 min",
+      "phone": "9876543211"
+    },
+    {
+      "id": "#EATO1236",
+      "status": "Delivered",
+      "pickup": "KFC, Gachibowli",
+      "delivery": "Dilsukhnagar, Hyderabad",
+      "price": "₹249",
+      "time": "Today • 12:10 PM",
+      "eta": "Delivered",
+      "phone": "9876543212"
+    },
   ];
 
   @override
@@ -263,11 +267,22 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
                 style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
               ),
               const Divider(height: 24),
-              _infoRow(
-                icon: Icons.restaurant,
-                color: Colors.orange,
-                title: "Pickup",
-                subtitle: order["pickup"]!,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _infoRow(
+                      icon: Icons.restaurant,
+                      color: Colors.orange,
+                      title: "Pickup",
+                      subtitle: order["pickup"]!,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.navigation, color: Colors.orange),
+                    onPressed: () => _launchGoogleMaps(order["pickup"]!),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               Row(
@@ -287,8 +302,6 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
                   ),
                 ],
               ),
-
-
               const SizedBox(height: 16),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -456,17 +469,71 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              Text(
-                "Delivery Partner",
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
+              BlocBuilder<AvailabilityCubit, AvailabilityState>(
+                builder: (context, state) {
+                  final available = (state is AvailabilitySuccess)
+                      ? state.model.data?.available ?? false
+                      : isOnline;
+
+                  return Row(
+                    children: [
+                      Icon(
+                        available ? Icons.circle : Icons.circle_outlined,
+                        color: available ? Colors.green : Colors.redAccent,
+                        size: 10,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        available ? "Online" : "Offline",
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: available ? Colors.green : Colors.redAccent,
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ],
           ),
           const Spacer(),
-          Icon(Icons.notifications_none, color: Colors.black87, size: 26),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            child: BlocBuilder<AvailabilityCubit, AvailabilityState>(
+              builder: (context, state) {
+                final available = (state is AvailabilitySuccess)
+                    ? state.model.data?.available ?? false
+                    : isOnline;
+
+                return Row(
+                  children: [
+                    Icon(Icons.wifi,
+                        size: 18,
+                        color: available ? Colors.green : Colors.grey),
+                    const SizedBox(width: 4),
+                    Switch(
+                      value: available,
+                      onChanged: (val) {
+                        setState(() {
+                          isOnline = val;
+                        });
+                        context
+                            .read<AvailabilityCubit>()
+                            .updateAvailability(val);
+                      },
+                      activeColor: Colors.green,
+                      inactiveThumbColor: Colors.grey,
+                      inactiveTrackColor: Colors.grey.shade400,
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
           const SizedBox(width: 12),
           GestureDetector(
             onTap: () {
@@ -480,13 +547,15 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
             child: CircleAvatar(
               radius: 18,
               backgroundColor: Colors.grey.shade200,
-              backgroundImage: AssetImage(rider), // replace with your image
+              backgroundImage: AssetImage(rider),
             ),
           ),
         ],
       ),
     );
   }
+
+
 
   Widget _buildSummaryCards() {
     return Padding(

@@ -8,6 +8,7 @@ import 'package:eato_delivery_partner/data/dataSource/authentication/signin_remo
 import 'package:eato_delivery_partner/data/dataSource/authentication/signup_remote_data_source.dart';
 import 'package:eato_delivery_partner/data/dataSource/authentication/trigger_otp_remote_data_source.dart';
 import 'package:eato_delivery_partner/data/dataSource/authentication/update_current_customer_dataSource.dart';
+import 'package:eato_delivery_partner/data/dataSource/availability/availability_dataSource.dart';
 import 'package:eato_delivery_partner/data/dataSource/location/location_remotedatasource.dart';
 import 'package:eato_delivery_partner/data/dataSource/registration/registration_dataSource.dart';
 import 'package:eato_delivery_partner/data/repoImpl/authentication/current_customer_repository_impl.dart';
@@ -16,6 +17,7 @@ import 'package:eato_delivery_partner/data/repoImpl/authentication/signin_reposi
 import 'package:eato_delivery_partner/data/repoImpl/authentication/signup_repository_impl.dart';
 import 'package:eato_delivery_partner/data/repoImpl/authentication/trigger_otp_repository_impl.dart';
 import 'package:eato_delivery_partner/data/repoImpl/authentication/update_current_customer_repoImpl.dart';
+import 'package:eato_delivery_partner/data/repoImpl/availability/availability_repoImpl.dart';
 import 'package:eato_delivery_partner/data/repoImpl/location/location_repoImpl.dart';
 import 'package:eato_delivery_partner/data/repoImpl/registration/registration_repoImpl.dart';
 import 'package:eato_delivery_partner/domain/repository/authentication/current_customer_repository.dart';
@@ -24,6 +26,7 @@ import 'package:eato_delivery_partner/domain/repository/authentication/signin_re
 import 'package:eato_delivery_partner/domain/repository/authentication/signup_repository.dart';
 import 'package:eato_delivery_partner/domain/repository/authentication/trigger_otp_repository.dart';
 import 'package:eato_delivery_partner/domain/repository/authentication/update_current_customer_repository.dart';
+import 'package:eato_delivery_partner/domain/repository/availability/availability_repository.dart';
 import 'package:eato_delivery_partner/domain/repository/location/location_repo.dart';
 import 'package:eato_delivery_partner/domain/repository/registration/registration_repository.dart';
 import 'package:eato_delivery_partner/domain/usecase/authentication/current_customer_usecase.dart';
@@ -32,6 +35,7 @@ import 'package:eato_delivery_partner/domain/usecase/authentication/signin_useca
 import 'package:eato_delivery_partner/domain/usecase/authentication/signup_usecase.dart';
 import 'package:eato_delivery_partner/domain/usecase/authentication/trigger_otp_usecase.dart';
 import 'package:eato_delivery_partner/domain/usecase/authentication/update_current_customer_usecase.dart';
+import 'package:eato_delivery_partner/domain/usecase/availability/availability_usecase.dart';
 import 'package:eato_delivery_partner/domain/usecase/location/location_usecase.dart';
 import 'package:eato_delivery_partner/domain/usecase/registration/registration_usecase.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_cubit.dart';
@@ -40,6 +44,7 @@ import 'package:eato_delivery_partner/presentation/cubit/authentication/login/tr
 import 'package:eato_delivery_partner/presentation/cubit/authentication/roles/rolesPost_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/signUp/signup_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/signin/sigin_cubit.dart';
+import 'package:eato_delivery_partner/presentation/cubit/availability/availability_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/location/location_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/registration/registration_cubit.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -190,5 +195,20 @@ void init() {
   );
   sl.registerFactory(() => RegistrationCubit(
         sl<RegistrationUseCase>(),
+      ));
+
+  //Availability
+  sl.registerLazySingleton<AvailabilityRemoteDataSource>(
+    () => AvailabilityRemoteDataSourceImpl(client: sl<DioClient>().dio),
+  );
+  sl.registerLazySingleton<AvailabilityRepository>(
+    () => AvailabilityRepositoryImpl(
+        remoteDataSource: sl<AvailabilityRemoteDataSource>()),
+  );
+  sl.registerLazySingleton(
+    () => AvailabilityUseCase(repository: sl<AvailabilityRepository>()),
+  );
+  sl.registerFactory(() => AvailabilityCubit(
+        sl<AvailabilityUseCase>(),
       ));
 }

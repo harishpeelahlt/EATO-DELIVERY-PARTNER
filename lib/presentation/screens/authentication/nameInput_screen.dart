@@ -4,6 +4,10 @@ import 'package:eato_delivery_partner/components/custom_topbar.dart';
 import 'package:eato_delivery_partner/core/constants/colors.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/currentcustomer/update/update_current_customer_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/currentcustomer/update/update_current_customer_state.dart';
+import 'package:eato_delivery_partner/presentation/cubit/authentication/roles/rolesPost_cubit.dart';
+import 'package:eato_delivery_partner/presentation/cubit/authentication/roles/rolesPost_state.dart';
+import 'package:eato_delivery_partner/presentation/cubit/registration/registration_cubit.dart';
+import 'package:eato_delivery_partner/presentation/cubit/registration/registration_state.dart';
 import 'package:eato_delivery_partner/presentation/screens/dashboard/deliveryPartnerDashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,28 +15,29 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class NameInputScreen extends StatefulWidget {
   final String? initialEmail;
-
   const NameInputScreen({super.key, this.initialEmail});
 
   @override
-  _NameInputScreenState createState() => _NameInputScreenState();
+  State<NameInputScreen> createState() => _NameInputScreenState();
 }
 
 class _NameInputScreenState extends State<NameInputScreen> {
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
   late TextEditingController _emailController;
-  late TextEditingController _vehicleNumberlController;
-
+  late TextEditingController _vehicleNumberController;
   final _formKey = GlobalKey<FormState>();
+
+  Map<String, dynamic> registrationPayload = {};
+  Map<String, dynamic> updatePayload = {};
 
   @override
   void initState() {
     super.initState();
-    _firstNameController = TextEditingController(text: '');
-    _lastNameController = TextEditingController(text: '');
+    _firstNameController = TextEditingController();
+    _lastNameController = TextEditingController();
     _emailController = TextEditingController(text: widget.initialEmail ?? '');
-    _vehicleNumberlController = TextEditingController(text: '');
+    _vehicleNumberController = TextEditingController();
   }
 
   @override
@@ -40,33 +45,67 @@ class _NameInputScreenState extends State<NameInputScreen> {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
-    _vehicleNumberlController.dispose();
+    _vehicleNumberController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<UpdateCurrentCustomerCubit, UpdateCurrentCustomerState>(
-      listener: (context, state) {
-        if (state.isLoading) {
-        } else if (state.error != null && state.error!.isNotEmpty) {
-          CustomSnackbars.showErrorSnack(
-            context: context,
-            title: "Failed",
-            message: "Something went wrong",
-          );
-        } else if (state.data != null) {
-          CustomSnackbars.showSuccessSnack(
-            context: context,
-            title: "Success",
-            message: "Profile updated successfully",
-          );
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => DeliveryPartnerDashboard()),
-          );
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<RolePostCubit, RolePostState>(
+          listener: (context, state) {
+            if (state is RolePostFailure) {
+              CustomSnackbars.showErrorSnack(
+                context: context,
+                title: "Failed",
+                message: "Role Assignment Failed",
+              );
+            } else if (state is RolePostSuccess) {
+              context.read<RegistrationCubit>().register(registrationPayload);
+            }
+          },
+        ),
+        BlocListener<RegistrationCubit, RegistrationState>(
+          listener: (context, state) {
+            if (state is RegistrationFailure) {
+              CustomSnackbars.showErrorSnack(
+                context: context,
+                title: "Failed",
+                message: "Registration Failed",
+              );
+            } else if (state is RegistrationSuccess) {
+              context
+                  .read<UpdateCurrentCustomerCubit>()
+                  .updateCustomer(updatePayload, context);
+            }
+          },
+        ),
+        BlocListener<UpdateCurrentCustomerCubit, UpdateCurrentCustomerState>(
+          listener: (context, state) {
+            if (state.error != null && state.error!.isNotEmpty) {
+              CustomSnackbars.showErrorSnack(
+                context: context,
+                title: "Failed",
+                message: "Something went wrong",
+              );
+            } else if (state.data != null) {
+              CustomSnackbars.showSuccessSnack(
+                context: context,
+                title: "Success",
+                message: "Profile updated successfully",
+              );
+
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const DeliveryPartnerDashboard(),
+                ),
+              );
+            }
+          },
+        ),
+      ],
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: CustomAppBar(
@@ -80,166 +119,58 @@ class _NameInputScreenState extends State<NameInputScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'First Name',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: TextFormField(
-                    controller: _firstNameController,
-                    style: const TextStyle(fontSize: 16),
-                    decoration: const InputDecoration(
-                      hintText: 'Enter first name',
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                      hintStyle: TextStyle(color: Colors.grey),
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z ]')),
-                      LengthLimitingTextInputFormatter(30),
-                    ],
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your first name';
-                      }
-                      return null;
-                    },
-                  ),
+                _buildLabel("First Name"),
+                _buildTextField(
+                  controller: _firstNameController,
+                  hint: "Enter first name",
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z ]')),
+                    LengthLimitingTextInputFormatter(30),
+                  ],
+                  validatorMsg: "Please enter your first name",
                 ),
                 const SizedBox(height: 24),
-                const Text(
-                  'Last Name',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: TextFormField(
-                    controller: _lastNameController,
-                    style: const TextStyle(fontSize: 16),
-                    decoration: const InputDecoration(
-                      hintText: 'Enter last name',
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                      hintStyle: TextStyle(color: Colors.grey),
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z ]')),
-                      LengthLimitingTextInputFormatter(30),
-                    ],
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your last name';
-                      }
-                      return null;
-                    },
-                  ),
+                _buildLabel("Last Name"),
+                _buildTextField(
+                  controller: _lastNameController,
+                  hint: "Enter last name",
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z ]')),
+                    LengthLimitingTextInputFormatter(30),
+                  ],
+                  validatorMsg: "Please enter your last name",
                 ),
                 const SizedBox(height: 24),
-                const Text(
-                  'Email',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: TextFormField(
-                    controller: _emailController,
-                    style: const TextStyle(fontSize: 16),
-                    decoration: const InputDecoration(
-                      hintText: 'Enter email address',
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                      hintStyle: TextStyle(color: Colors.grey),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
-                      }
-                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                          .hasMatch(value)) {
-                        return 'Please enter a valid email';
-                      }
-                      return null;
-                    },
-                  ),
+                _buildLabel("Email"),
+                _buildTextField(
+                  controller: _emailController,
+                  hint: "Enter email address",
+                  inputType: TextInputType.emailAddress,
+                  validatorMsg: "Please enter a valid email",
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your email';
+                    }
+                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                        .hasMatch(value)) {
+                      return 'Please enter a valid email';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 24),
-                const Text(
-                  'Vehicle Number',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
+                _buildLabel("Vehicle Number"),
+                _buildTextField(
+                  controller: _vehicleNumberController,
+                  hint: "Enter vehicle number",
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9 ]')),
+                    LengthLimitingTextInputFormatter(15),
+                    UpperCaseTextFormatter(),
+                  ],
+                  validatorMsg: "Please enter your vehicle number",
+                  textCapitalization: TextCapitalization.characters,
                 ),
-                const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: TextFormField(
-                    controller: _vehicleNumberlController,
-                    style: const TextStyle(fontSize: 16),
-                    textCapitalization: TextCapitalization.characters,
-                    decoration: const InputDecoration(
-                      hintText: 'Enter vehicle number',
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                      hintStyle: TextStyle(color: Colors.grey),
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                          RegExp(r'[A-Za-z0-9 ]')),
-                      LengthLimitingTextInputFormatter(15),
-                      UpperCaseTextFormatter(), // 👈 custom formatter for uppercase
-                    ],
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your vehicle number';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-
                 const SizedBox(height: 24),
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -251,32 +182,88 @@ class _NameInputScreenState extends State<NameInputScreen> {
                   child: const Center(
                     child: Text(
                       'This name will appear on your account and food orders',
-                      style: TextStyle(
-                        fontSize: 13,
-                      ),
+                      style: TextStyle(fontSize: 13),
                     ),
                   ),
                 ),
                 const SizedBox(height: 30),
-                SizedBox(
-                    width: double.infinity,
-                    child: BlocBuilder<UpdateCurrentCustomerCubit,
-                        UpdateCurrentCustomerState>(
-                      builder: (context, state) {
-                        return SizedBox(
-                          width: double.infinity,
-                          child: CustomButton(
-                            buttonText: "Save Changes",
-                            isLoading: state.isLoading,
-                            onPressed: _saveChanges,
-                          ),
+                BlocBuilder<RolePostCubit, RolePostState>(
+                  builder: (context, roleState) {
+                    final isLoadingRole = roleState is RolePostLoading;
+
+                    return BlocBuilder<RegistrationCubit, RegistrationState>(
+                      builder: (context, regState) {
+                        final isRegLoading = regState is RegistrationLoading;
+
+                        return BlocBuilder<UpdateCurrentCustomerCubit,
+                            UpdateCurrentCustomerState>(
+                          builder: (context, updateState) {
+                            return CustomButton(
+                              buttonText: "Save Changes",
+                              isLoading: isLoadingRole ||
+                                  isRegLoading ||
+                                  updateState.isLoading,
+                              onPressed: _saveChanges,
+                            );
+                          },
                         );
                       },
-                    )),
+                    );
+                  },
+                ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildLabel(String text) {
+    return Text(
+      text,
+      style: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: Colors.black87,
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hint,
+    List<TextInputFormatter>? inputFormatters,
+    TextInputType inputType = TextInputType.text,
+    String? Function(String?)? validator,
+    String? validatorMsg,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: TextFormField(
+        controller: controller,
+        style: const TextStyle(fontSize: 16),
+        decoration: InputDecoration(
+          hintText: hint,
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          hintStyle: const TextStyle(color: Colors.grey),
+        ),
+        textCapitalization: textCapitalization,
+        inputFormatters: inputFormatters,
+        keyboardType: inputType,
+        validator: validator ??
+            (value) {
+              if (value == null || value.isEmpty) {
+                return validatorMsg;
+              }
+              return null;
+            },
       ),
     );
   }
@@ -286,19 +273,29 @@ class _NameInputScreenState extends State<NameInputScreen> {
       final fullName =
           '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}'
               .trim();
-      final payload = {
+
+      // Store payloads
+      updatePayload = {
         'fullName': fullName,
         'email': _emailController.text.trim(),
-        'eato': true,
-        "fcmToken": ''
+        'fcmToken': '',
       };
 
+      registrationPayload = {
+        'vehicleNumber': _vehicleNumberController.text.trim(),
+        'status': 'AVAILABLE',
+        'active': true,
+        'available': true,
+      };
+
+      // Start with Role assignment
       context
-          .read<UpdateCurrentCustomerCubit>()
-          .updateCustomer(payload, context);
+          .read<RolePostCubit>()
+          .postRole(role: 'ROLE_DELIVERY_PARTNER', context: context);
     }
   }
 }
+
 class UpperCaseTextFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(

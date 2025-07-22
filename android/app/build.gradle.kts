@@ -1,11 +1,14 @@
 plugins {
     id("com.android.application")
+    // START: FlutterFire Configuration
+    id("com.google.gms.google-services")
+    // END: FlutterFire Configuration
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
 }
 
 android {
-    namespace = "com.example.eato_delivery_partner"
+    namespace = "com.eato_delivery_partner"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 
@@ -20,12 +23,12 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.eato_delivery_partner"
+        applicationId = "com.eato_delivery_partner"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-    }
+    } 
 
     buildTypes {
         release {
