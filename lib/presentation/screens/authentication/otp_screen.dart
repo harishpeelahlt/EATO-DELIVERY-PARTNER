@@ -118,7 +118,7 @@ class _OtpScreenState extends State<OtpScreen> {
           BlocListener<CurrentCustomerCubit, CurrentCustomerState>(
             listener: (context, state) {
               if (state is CurrentCustomerLoaded) {
-                if (state.currentCustomerModel.eato == true) {
+                if (state.currentCustomerModel.deliveryPartner == true) {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (_) => const DeliveryPartnerDashboard()),
