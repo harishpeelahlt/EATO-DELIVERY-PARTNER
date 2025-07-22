@@ -10,6 +10,8 @@ import 'package:eato_delivery_partner/presentation/cubit/authentication/signUp/s
 import 'package:eato_delivery_partner/presentation/cubit/authentication/signin/sigin_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/availability/availability_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/location/location_cubit.dart';
+import 'package:eato_delivery_partner/presentation/cubit/orders/fetchOrders/fetchOrders_cubit.dart';
+import 'package:eato_delivery_partner/presentation/cubit/partnerDetails/partnerDetails_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/registration/registration_cubit.dart';
 import 'package:eato_delivery_partner/presentation/screens/authentication/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -77,6 +79,8 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (_) => di.sl<DeleteAccountCubit>()),
         BlocProvider(create: (_) => di.sl<RegistrationCubit>()),
         BlocProvider(create: (_) => di.sl<AvailabilityCubit>()),
+        BlocProvider(create: (_) => di.sl<PartnerDetailsCubit>()),
+        BlocProvider(create: (_) => di.sl<FetchOrdersCubit>()),
 
       ],
       child: MaterialApp(

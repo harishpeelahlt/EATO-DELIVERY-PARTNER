@@ -257,13 +257,13 @@ class OrderItem {
   final int? id;
   final int? productId;
   final int? quantity;
-  final int? price;
+  final num? price;
   final int? entryNumber;
   final String? productName;
   final dynamic media;
-  final double? taxAmount;
-  final int? taxPercentage;
-  final double? totalAmount;
+  final num? taxAmount;
+  final num? taxPercentage;
+  final num? totalAmount;
   final bool? taxIgnored;
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
