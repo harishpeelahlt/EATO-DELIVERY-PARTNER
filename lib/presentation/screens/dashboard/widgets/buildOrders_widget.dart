@@ -1,12 +1,14 @@
 import 'dart:ui';
-
 import 'package:eato_delivery_partner/presentation/cubit/orders/fetchOrders/fetchOrders_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/orders/fetchOrders/fetchOrders_state.dart';
 import 'package:eato_delivery_partner/presentation/screens/dashboard/widgets/dashboard_widgets.dart';
 import 'package:eato_delivery_partner/presentation/screens/dashboard/widgets/orderCard_widget.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:eato_delivery_partner/presentation/cubit/orders/updateOrderStatus/updateOrderStatus_cubit.dart';
+import 'package:eato_delivery_partner/presentation/cubit/orders/updateOrderStatus/updateOrderStatus_state.dart';
 
 class BuildOrders extends StatefulWidget {
   final String status;
@@ -63,6 +65,8 @@ class _BuildOrdersState extends State<BuildOrders> {
       if (status == "ACCEPTED") {
         return [
           "CONFIRMED",
+          "PENDING",
+          "PICKED_UP",
           "PREPARING",
           "READY_FOR_PICKUP",
           "OUT_FOR_DELIVERY"
@@ -76,63 +80,83 @@ class _BuildOrdersState extends State<BuildOrders> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<FetchOrdersCubit, FetchOrdersState>(
+    return BlocListener<UpdateOrderStatusCubit, UpdateOrderStatusState>(
       listener: (context, state) {
-        if (state is FetchOrdersSuccess) {
-          final newOrders = _filterOrders(state.orders.data?.content ?? []);
-          setState(() {
-            if (currentPage == 0) {
-              allOrders = newOrders;
-            } else {
-              allOrders.addAll(newOrders);
-            }
-            allPagesLoaded = state.orders.data?.last ?? true;
-          });
+        if (state is UpdateOrderStatusLoading) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Updating order status...")),
+          );
+        } else if (state is UpdateOrderStatusSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Order status updated.")),
+          );
+          currentPage = 0;
+          allOrders.clear();
+          _fetchOrders();
+        } else if (state is UpdateOrderStatusFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Failed")),
+          );
         }
       },
-      builder: (context, state) {
-        if (state is FetchOrdersLoading && currentPage == 0) {
-          return _buildLoading();
-        }
+      child: BlocConsumer<FetchOrdersCubit, FetchOrdersState>(
+        listener: (context, state) {
+          if (state is FetchOrdersSuccess) {
+            final newOrders = _filterOrders(state.orders.data?.content ?? []);
+            setState(() {
+              if (currentPage == 0) {
+                allOrders = newOrders;
+              } else {
+                allOrders.addAll(newOrders);
+              }
+              allPagesLoaded = state.orders.data?.last ?? true;
+            });
+          }
+        },
+        builder: (context, state) {
+          if (state is FetchOrdersLoading && currentPage == 0) {
+            return _buildLoading();
+          }
 
-        if (state is FetchOrdersFailure) {
-          return _buildError(state.message);
-        }
+          if (state is FetchOrdersFailure) {
+            return _buildError("Failed to Fetch Orders");
+          }
 
-        if (allOrders.isEmpty) {
-          return _buildEmpty();
-        }
+          if (allOrders.isEmpty) {
+            return _buildEmpty();
+          }
 
-        return ListView.builder(
-          controller: _scrollController,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          itemCount: allOrders.length + (isLoadingMore ? 1 : 0),
-          itemBuilder: (context, index) {
-            if (index < allOrders.length) {
-              return buildOrderCard(context, allOrders[index]);
-            } else {
-              return const Padding(
-                padding: EdgeInsets.all(16),
-                child: Center(child: CircularProgressIndicator()),
-              );
-            }
-          },
-        );
-      },
+          return ListView.builder(
+            controller: _scrollController,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            itemCount: allOrders.length + (isLoadingMore ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index < allOrders.length) {
+                return buildOrderCard(context, allOrders[index]);
+              } else {
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CupertinoActivityIndicator()),
+                );
+              }
+            },
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildLoading() => const Center(child: CircularProgressIndicator());
+  Widget _buildLoading() => const Center(child: CupertinoActivityIndicator());
 
   Widget _buildError(String message) =>
-      Center(child: Text("Error: $message", style: GoogleFonts.poppins()));
+      Center(child: Text(message, style: GoogleFonts.poppins()));
 
   Widget _buildEmpty() => const Center(
         child: Text("No accepted or delivered orders found."),
       );
 
   Widget buildOrderCard(BuildContext context, dynamic order) {
-    final status = order.orderStatus ?? "";
+    final status = (order.orderStatus ?? "").toUpperCase();
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: BackdropFilter(
@@ -154,11 +178,9 @@ class _BuildOrdersState extends State<BuildOrders> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ✅ Updated Header Row
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Left side: Order info + status
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -173,7 +195,6 @@ class _BuildOrdersState extends State<BuildOrders> {
                       ],
                     ),
                   ),
-                  // Right side: Call + Price
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
@@ -192,8 +213,6 @@ class _BuildOrdersState extends State<BuildOrders> {
                 ],
               ),
               const Divider(height: 24),
-
-              // Pickup
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -212,10 +231,7 @@ class _BuildOrdersState extends State<BuildOrders> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 12),
-
-              // Delivery
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -234,36 +250,24 @@ class _BuildOrdersState extends State<BuildOrders> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 16),
-
-              // ETA and Actions
               Row(
                 children: [
-                  // Column(
-                  //   crossAxisAlignment: CrossAxisAlignment.start,
-                  //   children: [
-                  //     Text("ETA",
-                  //         style: GoogleFonts.poppins(
-                  //             fontSize: 13, color: Colors.grey[600])),
-                  //     const SizedBox(height: 4),
-                  //     Text(
-                  //       status == "DELIVERED"
-                  //           ? "Delivered"
-                  //           : formattedStatus(status),
-                  //     )
-                  //   ],
-                  // ),
                   const Spacer(),
-                  if (["CONFIRMED", "PREPARING", "READY_FOR_PICKUP"]
+                  if (["CONFIRMED", "PENDING", "OUT_FOR_DELIVERY"]
                       .contains(status))
                     actionButton("Pick Up", Colors.green, () {
-                      showActionDialog("New", order.orderNumber ?? "", context);
+                      context.read<UpdateOrderStatusCubit>().updateOrderStatus(
+                            order.orderNumber.toString(),
+                            "PICKED_UP",
+                          );
                     }),
-                  if (status == "OUT_FOR_DELIVERY")
+                  if (["PICKED_UP"].contains(status))
                     actionButton("Deliver", Colors.orange, () {
-                      showActionDialog(
-                          "Accepted", order.orderNumber ?? "", context);
+                      context.read<UpdateOrderStatusCubit>().updateOrderStatus(
+                            order.orderNumber.toString(),
+                            "DELIVERED",
+                          );
                     }),
                 ],
               ),
@@ -286,7 +290,8 @@ String formattedStatus(String status) {
 }
 
 String getLast4Digits(String? orderNumber) {
-  if (orderNumber == null || orderNumber.length <= 4)
+  if (orderNumber == null || orderNumber.length <= 4) {
     return orderNumber ?? "----";
+  }
   return orderNumber.substring(orderNumber.length - 4);
 }

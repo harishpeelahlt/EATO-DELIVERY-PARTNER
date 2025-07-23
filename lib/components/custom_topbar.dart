@@ -26,8 +26,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              AppColor.primaryColor.withOpacity(0.95),
-              AppColor.primaryColor.withOpacity(0.85),
+              AppColor.white.withOpacity(0.95),
+              AppColor.white.withOpacity(0.85),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -49,7 +49,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   IconButton(
                     icon:
                         const Icon(Icons.arrow_back_ios_new_rounded, size: 22),
-                    color: AppColor.white,
+                    color: AppColor.black,
                     onPressed: onBackPressed ?? () => Navigator.pop(context),
                   )
                 else
@@ -58,8 +58,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   child: Center(
                     child: Text(
                       title,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: AppColor.black,
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 1.0,

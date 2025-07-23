@@ -3,6 +3,7 @@ import 'package:eato_delivery_partner/core/network/dio_client.dart';
 import 'package:eato_delivery_partner/core/network/network_cubit.dart';
 import 'package:eato_delivery_partner/core/network/network_service.dart';
 import 'package:eato_delivery_partner/data/dataSource/authentication/current_customer_remote_data_source.dart';
+import 'package:eato_delivery_partner/data/dataSource/authentication/deleteAccount_dataSource.dart';
 import 'package:eato_delivery_partner/data/dataSource/authentication/rolesPost_dataSource.dart';
 import 'package:eato_delivery_partner/data/dataSource/authentication/signin_remote_data_source.dart';
 import 'package:eato_delivery_partner/data/dataSource/authentication/signup_remote_data_source.dart';
@@ -11,9 +12,11 @@ import 'package:eato_delivery_partner/data/dataSource/authentication/update_curr
 import 'package:eato_delivery_partner/data/dataSource/availability/availability_dataSource.dart';
 import 'package:eato_delivery_partner/data/dataSource/location/location_remotedatasource.dart';
 import 'package:eato_delivery_partner/data/dataSource/orders/fetchOrders/fetchOrders_dataSource.dart';
+import 'package:eato_delivery_partner/data/dataSource/orders/updateOrderStatus/updateOrderStatus_dataSource.dart';
 import 'package:eato_delivery_partner/data/dataSource/partnerDetails/partnerDetails_dataSource.dart';
 import 'package:eato_delivery_partner/data/dataSource/registration/registration_dataSource.dart';
 import 'package:eato_delivery_partner/data/repoImpl/authentication/current_customer_repository_impl.dart';
+import 'package:eato_delivery_partner/data/repoImpl/authentication/deleteAccount_repoImpl.dart';
 import 'package:eato_delivery_partner/data/repoImpl/authentication/rolesPost_repoImpl.dart';
 import 'package:eato_delivery_partner/data/repoImpl/authentication/signin_repository_impl.dart';
 import 'package:eato_delivery_partner/data/repoImpl/authentication/signup_repository_impl.dart';
@@ -22,9 +25,11 @@ import 'package:eato_delivery_partner/data/repoImpl/authentication/update_curren
 import 'package:eato_delivery_partner/data/repoImpl/availability/availability_repoImpl.dart';
 import 'package:eato_delivery_partner/data/repoImpl/location/location_repoImpl.dart';
 import 'package:eato_delivery_partner/data/repoImpl/orders/fetchOrders/fetchOrders_repoImpl.dart';
+import 'package:eato_delivery_partner/data/repoImpl/orders/updateOrderStatus/updateOrderStatus_repoImpl.dart';
 import 'package:eato_delivery_partner/data/repoImpl/partnerDetails/partnerDetails_repoImpl.dart';
 import 'package:eato_delivery_partner/data/repoImpl/registration/registration_repoImpl.dart';
 import 'package:eato_delivery_partner/domain/repository/authentication/current_customer_repository.dart';
+import 'package:eato_delivery_partner/domain/repository/authentication/deleteAccount_repository.dart';
 import 'package:eato_delivery_partner/domain/repository/authentication/rolesPost_repository.dart';
 import 'package:eato_delivery_partner/domain/repository/authentication/signin_repository.dart';
 import 'package:eato_delivery_partner/domain/repository/authentication/signup_repository.dart';
@@ -33,9 +38,11 @@ import 'package:eato_delivery_partner/domain/repository/authentication/update_cu
 import 'package:eato_delivery_partner/domain/repository/availability/availability_repository.dart';
 import 'package:eato_delivery_partner/domain/repository/location/location_repo.dart';
 import 'package:eato_delivery_partner/domain/repository/orders/fetchOrders/fetchOrders_repository.dart';
+import 'package:eato_delivery_partner/domain/repository/orders/updateOrderStatus/updateOrderStatus_repository.dart';
 import 'package:eato_delivery_partner/domain/repository/partnerDetails/partnerDetails_repository.dart';
 import 'package:eato_delivery_partner/domain/repository/registration/registration_repository.dart';
 import 'package:eato_delivery_partner/domain/usecase/authentication/current_customer_usecase.dart';
+import 'package:eato_delivery_partner/domain/usecase/authentication/deleteAccount_usecase.dart';
 import 'package:eato_delivery_partner/domain/usecase/authentication/rolesPost_usecase.dart';
 import 'package:eato_delivery_partner/domain/usecase/authentication/signin_usecase.dart';
 import 'package:eato_delivery_partner/domain/usecase/authentication/signup_usecase.dart';
@@ -44,10 +51,12 @@ import 'package:eato_delivery_partner/domain/usecase/authentication/update_curre
 import 'package:eato_delivery_partner/domain/usecase/availability/availability_usecase.dart';
 import 'package:eato_delivery_partner/domain/usecase/location/location_usecase.dart';
 import 'package:eato_delivery_partner/domain/usecase/orders/fetchOrders/fetchOrders_usecase.dart';
+import 'package:eato_delivery_partner/domain/usecase/orders/updateOrderStatus/updateOrderStatus_usecase.dart';
 import 'package:eato_delivery_partner/domain/usecase/partnerDetails/partnerDetails_usecase.dart';
 import 'package:eato_delivery_partner/domain/usecase/registration/registration_usecase.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/currentcustomer/update/update_current_customer_cubit.dart';
+import 'package:eato_delivery_partner/presentation/cubit/authentication/deleteAccount/deleteAccount_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/login/trigger_otp_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/roles/rolesPost_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/signUp/signup_cubit.dart';
@@ -55,6 +64,7 @@ import 'package:eato_delivery_partner/presentation/cubit/authentication/signin/s
 import 'package:eato_delivery_partner/presentation/cubit/availability/availability_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/location/location_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/orders/fetchOrders/fetchOrders_cubit.dart';
+import 'package:eato_delivery_partner/presentation/cubit/orders/updateOrderStatus/updateOrderStatus_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/partnerDetails/partnerDetails_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/registration/registration_cubit.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -151,6 +161,21 @@ void init() {
   );
   sl.registerFactory(() => CurrentCustomerCubit(
       sl<CurrentCustomerValidationUseCase>(), sl<NetworkService>()));
+
+  //DeleteAccount
+  sl.registerLazySingleton<DeleteAccountRemoteDataSource>(
+    () => DeleteAccountRemoteDataSourceImpl(client: sl<DioClient>().dio),
+  );
+  sl.registerLazySingleton<DeleteAccountRepository>(
+    () => DeleteAccountRepositoryImpl(
+        remoteDataSource: sl<DeleteAccountRemoteDataSource>()),
+  );
+  sl.registerLazySingleton(
+    () => DeleteAccountUseCase(repository: sl<DeleteAccountRepository>()),
+  );
+  sl.registerFactory(() => DeleteAccountCubit(
+        sl<DeleteAccountUseCase>(),
+      ));
 
   //location//
 
@@ -251,5 +276,22 @@ void init() {
   );
   sl.registerFactory(() => FetchOrdersCubit(
         sl<FetchOrdersUseCase>(),
+      ));
+
+  //UpdateOrderStatus
+
+  sl.registerLazySingleton<UpdateOrderStatusRemoteDataSource>(
+    () => UpdateOrderStatusRemoteDataSourceImpl(client: sl<DioClient>().dio),
+  );
+  sl.registerLazySingleton<UpdateOrderStatusRepository>(
+    () => UpdateOrderStatusRepositoryImpl(
+        remoteDataSource: sl<UpdateOrderStatusRemoteDataSource>()),
+  );
+  sl.registerLazySingleton(
+    () =>
+        UpdateOrderStatusUseCase(repository: sl<UpdateOrderStatusRepository>()),
+  );
+  sl.registerFactory(() => UpdateOrderStatusCubit(
+        sl<UpdateOrderStatusUseCase>(),
       ));
 }

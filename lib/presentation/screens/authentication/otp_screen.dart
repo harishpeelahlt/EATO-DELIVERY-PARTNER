@@ -40,6 +40,8 @@ class _OtpScreenState extends State<OtpScreen> {
   final TextEditingController otpController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final FocusNode _otpFocusNode = FocusNode();
+  bool _hasNavigated = false;
+
 
   @override
   void initState() {
@@ -117,11 +119,15 @@ class _OtpScreenState extends State<OtpScreen> {
           ),
           BlocListener<CurrentCustomerCubit, CurrentCustomerState>(
             listener: (context, state) {
+              if (_hasNavigated) return;
+
               if (state is CurrentCustomerLoaded) {
+                _hasNavigated = true;
                 if (state.currentCustomerModel.deliveryPartner == true) {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (_) => const DeliveryPartnerDashboard()),
+                    MaterialPageRoute(
+                        builder: (_) => const DeliveryPartnerDashboard()),
                   );
                 } else {
                   Navigator.pushReplacement(
@@ -138,6 +144,7 @@ class _OtpScreenState extends State<OtpScreen> {
               }
             },
           ),
+
         ],
         child: Column(
           children: [

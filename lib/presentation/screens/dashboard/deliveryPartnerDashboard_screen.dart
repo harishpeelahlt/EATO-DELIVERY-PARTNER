@@ -21,7 +21,8 @@ class DeliveryPartnerDashboard extends StatefulWidget {
 class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  bool isOnline = true;
+  bool isOnline = false;
+  bool _isStatusInitialized = false;
 
   @override
   void initState() {
@@ -42,14 +43,29 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
             } else if (state is PartnerDetailsLoaded) {
               final partnerId =
                   state.partnerDetails.data?.deliveryPartnerId ?? '';
+              final available = state.partnerDetails.data?.available ?? false;
+
+              // Initialize online status only once from backend
+              if (!_isStatusInitialized) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  setState(() {
+                    isOnline = available;
+                    _isStatusInitialized = true;
+                  });
+                });
+              }
+
               return Column(
                 children: [
                   buildHeader(context, isOnline, (val) {
                     setState(() => isOnline = val);
                     context.read<AvailabilityCubit>().updateAvailability(val);
+                    Future.delayed(const Duration(milliseconds: 300), () {
+                      context.read<PartnerDetailsCubit>().fetchPartnerDetails();
+                    });
                   }),
                   const Divider(),
-                  buildSummaryCards(),
+                  // buildSummaryCards(),
                   const SizedBox(height: 8),
                   TabBar(
                     controller: _tabController,
@@ -58,7 +74,6 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
                         GoogleFonts.poppins(fontWeight: FontWeight.w600),
                     indicatorColor: Colors.blueAccent,
                     tabs: const [
-                      // Tab(text: "New"),
                       Tab(text: "Accepted"),
                       Tab(text: "Delivered"),
                     ],
@@ -67,7 +82,6 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
                     child: TabBarView(
                       controller: _tabController,
                       children: [
-                        // BuildOrders("New", partnerId),
                         BuildOrders("Accepted", partnerId),
                         BuildOrders("Delivered", partnerId),
                       ],
@@ -92,64 +106,63 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
     ValueChanged<bool> onToggle,
   ) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Left Section: Title + Online Toggle
-          Row(
-            children: [
-              // App Title
-              Text(
-                "Speed Delivery",
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+          Flexible(
+            child: Row(
+              children: [
+                Text(
+                  "Speed Delivery",
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-
-              // Online/Offline Label + Switch
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isOnline ? Colors.green.shade50 : Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      isOnline ? Icons.circle : Icons.circle_outlined,
-                      size: 10,
-                      color: isOnline ? Colors.green : Colors.red,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      isOnline ? "Online" : "Offline",
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                const SizedBox(width: 10),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: isOnline ? Colors.green.shade50 : Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isOnline ? Icons.circle : Icons.circle_outlined,
+                        size: 8,
                         color: isOnline ? Colors.green : Colors.red,
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    Transform.scale(
-                      scale: 0.85,
-                      child: Switch(
-                        value: isOnline,
-                        onChanged: onToggle,
-                        activeColor: Colors.green,
-                        inactiveThumbColor: Colors.red,
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      const SizedBox(width: 4),
+                      Text(
+                        isOnline ? "Online" : "Offline",
+                        style: GoogleFonts.poppins(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: isOnline ? Colors.green : Colors.red,
+                        ),
                       ),
-                    ),
-
-                  ],
+                      const SizedBox(width: 4),
+                      Transform.scale(
+                        scale: 0.75,
+                        child: Switch(
+                          value: isOnline,
+                          onChanged: onToggle,
+                          activeColor: Colors.green,
+                          inactiveThumbColor: Colors.red,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
 
           // Right Section: Profile Avatar
@@ -163,19 +176,19 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
               );
             },
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black12,
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
+                    blurRadius: 3,
+                    offset: Offset(0, 1.5),
                   ),
                 ],
               ),
               child: const CircleAvatar(
-                radius: 20,
-                backgroundImage: AssetImage(rider), // Your image asset
+                radius: 18,
+                backgroundImage: AssetImage(rider),
                 backgroundColor: Colors.grey,
               ),
             ),
