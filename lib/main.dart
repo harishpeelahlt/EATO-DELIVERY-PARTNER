@@ -11,6 +11,7 @@ import 'package:eato_delivery_partner/presentation/cubit/authentication/signin/s
 import 'package:eato_delivery_partner/presentation/cubit/availability/availability_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/location/location_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/orders/fetchOrders/fetchOrders_cubit.dart';
+import 'package:eato_delivery_partner/presentation/cubit/orders/updateOrderStatus/updateOrderStatus_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/partnerDetails/partnerDetails_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/registration/registration_cubit.dart';
 import 'package:eato_delivery_partner/presentation/screens/authentication/splash_screen.dart';
@@ -20,7 +21,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/injection.dart' as di;
-
 
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -55,7 +55,6 @@ void main() async {
   runApp(const MyApp());
 }
 
-
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -81,7 +80,7 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (_) => di.sl<AvailabilityCubit>()),
         BlocProvider(create: (_) => di.sl<PartnerDetailsCubit>()),
         BlocProvider(create: (_) => di.sl<FetchOrdersCubit>()),
-
+        BlocProvider(create: (_) => di.sl<UpdateOrderStatusCubit>()),
       ],
       child: MaterialApp(
         title: 'Eato',
@@ -93,7 +92,6 @@ class _MyAppState extends State<MyApp> {
         ),
         home: SplashScreen(),
       ),
-
     );
   }
 }

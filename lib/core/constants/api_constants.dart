@@ -11,9 +11,12 @@ const rolePostUrl = 'usermgmt/user/user';
 
 //partner
 const registrationUrl = 'delivery/api/partners';
-const availabilityUrl = 'delivery/api/partners/availabilityByToken?available';
+const availabilityUrl = 'delivery/api/partners/activeByToken?available';
 String fetchOrdersUrl(String partnerId, int page, int size) {
   return 'order/api/orders/by-partner?partnerId=$partnerId&status=&page=$page&size=$size';
 }
 
 const partnerDetailsUrl = 'delivery/api/partners/getPartner';
+String updateOrderStatusUrl(String orderId, String status) {
+  return 'order/api/orders/status/$orderId?status=$status&notes&updatedBy';
+}

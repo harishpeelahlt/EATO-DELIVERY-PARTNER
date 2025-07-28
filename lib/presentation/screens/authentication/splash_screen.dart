@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:eato_delivery_partner/core/constants/img_const.dart';
 import 'package:eato_delivery_partner/core/utils/push_notication_services.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_state.dart';
@@ -90,6 +91,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     return BlocListener<CurrentCustomerCubit, CurrentCustomerState>(
       listener: (context, state) {
@@ -119,34 +121,46 @@ class _SplashScreenState extends State<SplashScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Eato Partner',
-                style: GoogleFonts.montserrat(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 1.5,
-                ),
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset(
+              delivery,
+              fit: BoxFit.cover,
+            ),
+            Container(
+              color: Colors.black.withOpacity(0.6), // dark overlay for contrast
+            ),
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Eato Partner',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Delivering on time, every time',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white70,
+                      fontSize: 14,
+                      fontStyle: FontStyle.italic,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Delivering on time, every time',
-                style: GoogleFonts.poppins(
-                  color: Colors.white70,
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                  letterSpacing: 1,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
+
 }

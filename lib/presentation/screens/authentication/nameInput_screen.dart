@@ -2,12 +2,15 @@ import 'package:eato_delivery_partner/components/custom_button.dart';
 import 'package:eato_delivery_partner/components/custom_snackbar.dart';
 import 'package:eato_delivery_partner/components/custom_topbar.dart';
 import 'package:eato_delivery_partner/core/constants/colors.dart';
+import 'package:eato_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_cubit.dart';
+import 'package:eato_delivery_partner/presentation/cubit/authentication/currentcustomer/get/current_customer_state.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/currentcustomer/update/update_current_customer_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/currentcustomer/update/update_current_customer_state.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/roles/rolesPost_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/roles/rolesPost_state.dart';
 import 'package:eato_delivery_partner/presentation/cubit/registration/registration_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/registration/registration_state.dart';
+import 'package:eato_delivery_partner/presentation/screens/authentication/approvalPending_screen.dart';
 import 'package:eato_delivery_partner/presentation/screens/dashboard/deliveryPartnerDashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -30,6 +33,15 @@ class _NameInputScreenState extends State<NameInputScreen> {
 
   Map<String, dynamic> registrationPayload = {};
   Map<String, dynamic> updatePayload = {};
+  bool _navigateManually = true;
+
+  void _navigateTo(Widget screen) {
+    _navigateManually = false;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => screen),
+    );
+  }
 
   @override
   void initState() {
@@ -96,12 +108,27 @@ class _NameInputScreenState extends State<NameInputScreen> {
                 message: "Profile updated successfully",
               );
 
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const DeliveryPartnerDashboard(),
-                ),
-              );
+              context.read<CurrentCustomerCubit>().GetCurrentCustomer(context);
+            }
+          },
+        ),
+        BlocListener<CurrentCustomerCubit, CurrentCustomerState>(
+          listener: (context, state) {
+            if (!_navigateManually) return;
+
+            if (state is CurrentCustomerLoaded) {
+              final model = state.currentCustomerModel;
+              final roles = model.roles.map((r) => r.name).toList();
+              final hasDeliveryRole = roles.contains('ROLE_DELIVERY_PARTNER');
+              final isDeliveryPartner = model.deliveryPartner ?? false;
+
+              if (hasDeliveryRole) {
+                if (isDeliveryPartner) {
+                  _navigateTo(const DeliveryPartnerDashboard());
+                } else {
+                  _navigateTo(const ApprovalPendingScreen());
+                }
+              }
             }
           },
         ),
@@ -274,7 +301,6 @@ class _NameInputScreenState extends State<NameInputScreen> {
           '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}'
               .trim();
 
-      // Store payloads
       updatePayload = {
         'fullName': fullName,
         'email': _emailController.text.trim(),
@@ -288,7 +314,6 @@ class _NameInputScreenState extends State<NameInputScreen> {
         'available': true,
       };
 
-      // Start with Role assignment
       context
           .read<RolePostCubit>()
           .postRole(role: 'ROLE_DELIVERY_PARTNER', context: context);
