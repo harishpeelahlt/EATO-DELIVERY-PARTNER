@@ -157,6 +157,8 @@ class _BuildOrdersState extends State<BuildOrders> {
 
   Widget buildOrderCard(BuildContext context, dynamic order) {
     final status = (order.orderStatus ?? "").toUpperCase();
+    final isDelivered = status == "DELIVERED";
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: BackdropFilter(
@@ -178,6 +180,7 @@ class _BuildOrdersState extends State<BuildOrders> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              /// Header: Order Number and Status
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -198,11 +201,12 @@ class _BuildOrdersState extends State<BuildOrders> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.phone, color: Colors.green),
-                        onPressed: () => showCallConfirmation(
-                            context, order.mobileNumber ?? "0000000000"),
-                      ),
+                      if (!isDelivered)
+                        IconButton(
+                          icon: const Icon(Icons.phone, color: Colors.green),
+                          onPressed: () => showCallConfirmation(
+                              context, order.mobileNumber ?? "0000000000"),
+                        ),
                       Text("₹${order.totalAmount?.toStringAsFixed(2) ?? '--'}",
                           style: GoogleFonts.poppins(
                             fontSize: 16,
@@ -212,45 +216,51 @@ class _BuildOrdersState extends State<BuildOrders> {
                   ),
                 ],
               ),
-              const Divider(height: 24),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: infoRow(
-                      icon: Icons.restaurant,
-                      color: Colors.orange,
-                      title: "Pickup",
-                      subtitle: order.businessAddress?.addressLine1 ?? "N/A",
+
+              /// Address Info (Pickup & Delivery)
+              if (!isDelivered) ...[
+                const Divider(height: 24),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: infoRow(
+                        icon: Icons.restaurant,
+                        color: Colors.orange,
+                        title: "Pickup",
+                        subtitle: order.businessAddress?.addressLine1 ?? "N/A",
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.navigation, color: Colors.orange),
-                    onPressed: () => launchGoogleMaps(
-                        order.businessAddress?.addressLine1 ?? ""),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: infoRow(
-                      icon: Icons.delivery_dining,
-                      color: Colors.teal,
-                      title: "Delivery",
-                      subtitle: order.userAddress?.addressLine1 ?? "N/A",
+                    IconButton(
+                      icon: const Icon(Icons.navigation, color: Colors.orange),
+                      onPressed: () => launchGoogleMaps(
+                          order.businessAddress?.addressLine1 ?? ""),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.navigation, color: Colors.teal),
-                    onPressed: () =>
-                        launchGoogleMaps(order.userAddress?.addressLine1 ?? ""),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: infoRow(
+                        icon: Icons.delivery_dining,
+                        color: Colors.teal,
+                        title: "Delivery",
+                        subtitle: order.userAddress?.addressLine1 ?? "N/A",
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.navigation, color: Colors.teal),
+                      onPressed: () => launchGoogleMaps(
+                          order.userAddress?.addressLine1 ?? ""),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              /// Action Button (Pick Up / Deliver)
               Row(
                 children: [
                   const Spacer(),
@@ -262,7 +272,7 @@ class _BuildOrdersState extends State<BuildOrders> {
                             "PICKED_UP",
                           );
                     }),
-                  if (["PICKED_UP"].contains(status))
+                  if (status == "PICKED_UP")
                     actionButton("Deliver", Colors.orange, () {
                       context.read<UpdateOrderStatusCubit>().updateOrderStatus(
                             order.orderNumber.toString(),
@@ -277,6 +287,7 @@ class _BuildOrdersState extends State<BuildOrders> {
       ),
     );
   }
+
 
   @override
   void dispose() {

@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:eato_delivery_partner/core/constants/colors.dart';
 import 'package:eato_delivery_partner/core/constants/img_const.dart';
 import 'package:eato_delivery_partner/presentation/screens/profile/deliveryPartnerProfile_screen.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +9,6 @@ import 'package:eato_delivery_partner/presentation/cubit/availability/availabili
 import 'package:eato_delivery_partner/presentation/cubit/partnerDetails/partnerDetails_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/partnerDetails/partnerDetails_state.dart';
 import 'package:eato_delivery_partner/presentation/screens/dashboard/widgets/buildOrders_widget.dart';
-import 'package:eato_delivery_partner/presentation/screens/dashboard/widgets/summaryCard_widget.dart';
 
 class DeliveryPartnerDashboard extends StatefulWidget {
   const DeliveryPartnerDashboard({super.key});
@@ -34,7 +34,7 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: AppColor.white,
       body: SafeArea(
         child: BlocBuilder<PartnerDetailsCubit, PartnerDetailsState>(
           builder: (context, state) {
@@ -43,9 +43,8 @@ class _DeliveryPartnerDashboardState extends State<DeliveryPartnerDashboard>
             } else if (state is PartnerDetailsLoaded) {
               final partnerId =
                   state.partnerDetails.data?.deliveryPartnerId ?? '';
-              final available = state.partnerDetails.data?.available ?? false;
+              final available = state.partnerDetails.data?.active ?? false;
 
-              // Initialize online status only once from backend
               if (!_isStatusInitialized) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   setState(() {

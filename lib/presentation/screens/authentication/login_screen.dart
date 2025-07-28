@@ -4,6 +4,7 @@ import 'package:eato_delivery_partner/core/constants/colors.dart';
 import 'package:eato_delivery_partner/core/constants/img_const.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/login/trigger_otp_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/authentication/login/trigger_otp_state.dart';
+import 'package:eato_delivery_partner/presentation/terms&conditions/terms&conditions_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -83,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             children: [
                               Positioned.fill(
                                 child: Image.asset(
-                                  rider,
+                                  delivery,
                                   fit: BoxFit.cover,
                                 ),
                               ),
@@ -106,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "Eato",
+                                      "Eato Partner",
                                       style: GoogleFonts.poppins(
                                         color: Colors.white,
                                         fontSize: 50,
@@ -209,13 +210,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                           child: GestureDetector(
                                             onTap: () async {
                                               setState(() => isChecked = true);
-                                              // await Navigator.push(
-                                              //   context,
-                                              //   MaterialPageRoute(
-                                              //     builder: (_) =>
-                                              //         const TermsAndConditionsScreen(),
-                                              //   ),
-                                              // );
+                                              await Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) =>
+                                                      const TermsAndConditionsScreen(),
+                                                ),
+                                              );
                                             },
                                             child: Text.rich(
                                               TextSpan(

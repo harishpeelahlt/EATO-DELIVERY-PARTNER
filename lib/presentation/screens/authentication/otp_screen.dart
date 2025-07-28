@@ -154,7 +154,7 @@ class _OtpScreenState extends State<OtpScreen> {
                 children: [
                   Positioned.fill(
                     child: Image.asset(
-                      rider,
+                      delivery,
                       fit: BoxFit.cover,
                     ),
                   ),
