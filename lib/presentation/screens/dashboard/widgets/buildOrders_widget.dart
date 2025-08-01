@@ -1,4 +1,6 @@
 import 'dart:ui';
+import 'package:eato_delivery_partner/presentation/cubit/orders/deliverOtpVerification/deliverOtpVerification_cubit.dart';
+import 'package:eato_delivery_partner/presentation/cubit/orders/deliverOtpVerification/deliverOtpVerification_state.dart';
 import 'package:eato_delivery_partner/presentation/cubit/orders/fetchOrders/fetchOrders_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/orders/fetchOrders/fetchOrders_state.dart';
 import 'package:eato_delivery_partner/presentation/screens/dashboard/widgets/dashboard_widgets.dart';
@@ -9,6 +11,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:eato_delivery_partner/presentation/cubit/orders/updateOrderStatus/updateOrderStatus_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/orders/updateOrderStatus/updateOrderStatus_state.dart';
+
 
 class BuildOrders extends StatefulWidget {
   final String status;
@@ -95,7 +98,7 @@ class _BuildOrdersState extends State<BuildOrders> {
           _fetchOrders();
         } else if (state is UpdateOrderStatusFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Failed")),
+            const SnackBar(content: Text("Failed to update status.")),
           );
         }
       },
@@ -274,10 +277,7 @@ class _BuildOrdersState extends State<BuildOrders> {
                     }),
                   if (status == "PICKED_UP")
                     actionButton("Deliver", Colors.orange, () {
-                      context.read<UpdateOrderStatusCubit>().updateOrderStatus(
-                            order.orderNumber.toString(),
-                            "DELIVERED",
-                          );
+                      showOtpDialog(context, order);
                     }),
                 ],
               ),
@@ -288,6 +288,91 @@ class _BuildOrdersState extends State<BuildOrders> {
     );
   }
 
+  void showOtpDialog(BuildContext context, dynamic order) {
+    final TextEditingController otpController = TextEditingController();
+    final orderId = order.orderNumber.toString();
+
+    context.read<DeliverOtpCubit>().triggerOtp(orderId);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text("Enter Delivery OTP", style: GoogleFonts.poppins()),
+          content: BlocBuilder<DeliverOtpCubit, DeliverOtpState>(
+            builder: (context, state) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (state is DeliverOtpLoading)
+                    const CircularProgressIndicator(),
+                  if (state is DeliverOtpFailure)
+                    Text(state.message,
+                        style: const TextStyle(color: Colors.red)),
+                  TextField(
+                    controller: otpController,
+                    maxLength: 6,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: "OTP",
+                      counterText: "",
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        child: const Text("Resend"),
+                        onPressed: () {
+                          context.read<DeliverOtpCubit>().triggerOtp(orderId);
+                        },
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange),
+                        child: const Text("Verify & Deliver"),
+                        onPressed: () async {
+                          final otp = otpController.text.trim();
+                          if (otp.length == 6) {
+                            await context
+                                .read<DeliverOtpCubit>()
+                                .verifyOtp(orderId, otp);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Enter full OTP")),
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            )
+          ],
+        );
+      },
+    );
+
+    context.read<DeliverOtpCubit>().stream.listen((state) {
+      if (state is DeliverOtpVerifySuccess) {
+        Navigator.pop(context);
+        context
+            .read<UpdateOrderStatusCubit>()
+            .updateOrderStatus(orderId, "DELIVERED");
+      }
+    });
+  }
 
   @override
   void dispose() {

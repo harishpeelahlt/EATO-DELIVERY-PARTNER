@@ -10,6 +10,7 @@ import 'package:eato_delivery_partner/presentation/cubit/authentication/signUp/s
 import 'package:eato_delivery_partner/presentation/cubit/authentication/signin/sigin_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/availability/availability_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/location/location_cubit.dart';
+import 'package:eato_delivery_partner/presentation/cubit/orders/deliverOtpVerification/deliverOtpVerification_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/orders/fetchOrders/fetchOrders_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/orders/updateOrderStatus/updateOrderStatus_cubit.dart';
 import 'package:eato_delivery_partner/presentation/cubit/partnerDetails/partnerDetails_cubit.dart';
@@ -81,6 +82,7 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (_) => di.sl<PartnerDetailsCubit>()),
         BlocProvider(create: (_) => di.sl<FetchOrdersCubit>()),
         BlocProvider(create: (_) => di.sl<UpdateOrderStatusCubit>()),
+        BlocProvider(create: (_) => di.sl<DeliverOtpCubit>()),
       ],
       child: MaterialApp(
         title: 'Eato',

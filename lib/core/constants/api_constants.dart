@@ -20,3 +20,11 @@ const partnerDetailsUrl = 'delivery/api/partners/getPartner';
 String updateOrderStatusUrl(String orderId, String status) {
   return 'order/api/orders/status/$orderId?status=$status&notes&updatedBy';
 }
+
+String deliverTriggerOtpUrl(String orderId) {
+  return 'order/api/orders/trigger-delivery-otp?orderNumber=$orderId';
+}
+
+String deliverVerifyOtpUrl(String orderId, String otp) {
+  return 'order/api/orders/validate-delivery-otp?orderNumber=$orderId&otp=$otp';
+}
