@@ -1,5 +1,4 @@
 import 'dart:ui';
-import 'package:eato_delivery_partner/presentation/screens/dashboard/widgets/dashboard_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -159,132 +158,132 @@ void showActionDialog(String status, String orderId, BuildContext context) {
   );
 }
 
-class OrderCardWidget extends StatelessWidget {
-  final Map<String, String> order;
-  final void Function(String status, String orderId, BuildContext context)
-      showActionDialog;
-  final void Function(BuildContext context, String phone) showCallConfirmation;
+// class OrderCardWidget extends StatelessWidget {
+//   final Map<String, String> order;
+//   final void Function(String status, String orderId, BuildContext context)
+//       showActionDialog;
+//   final void Function(BuildContext context, String phone) showCallConfirmation;
 
-  const OrderCardWidget({
-    super.key,
-    required this.order,
-    required this.showActionDialog,
-    required this.showCallConfirmation,
-  });
+//   const OrderCardWidget({
+//     super.key,
+//     required this.order,
+//     required this.showActionDialog,
+//     required this.showCallConfirmation,
+//   });
 
-  String formatStatus(String status) {
-    return status.replaceAll('_', ' ').split(' ').map((word) {
-      if (word.isEmpty) return '';
-      return word[0].toUpperCase() + word.substring(1).toLowerCase();
-    }).join(' ');
-  }
+//   String formatStatus(String status) {
+//     return status.replaceAll('_', ' ').split(' ').map((word) {
+//       if (word.isEmpty) return '';
+//       return word[0].toUpperCase() + word.substring(1).toLowerCase();
+//     }).join(' ');
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    Theme.of(context);
+//   @override
+//   Widget build(BuildContext context) {
+//     Theme.of(context);
 
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Row 1: Order ID and Status
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Order #${order["id"]!.substring(order["id"]!.length - 4)}',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                statusChip(order["status"]!),
-              ],
-            ),
-            const SizedBox(height: 8),
+//     return Card(
+//       elevation: 2,
+//       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+//       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+//       child: Padding(
+//         padding: const EdgeInsets.all(16),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             // Row 1: Order ID and Status
+//             Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               children: [
+//                 Text(
+//                   'Order #${order["id"]!.substring(order["id"]!.length - 4)}',
+//                   style: GoogleFonts.poppins(
+//                     fontSize: 16,
+//                     fontWeight: FontWeight.w600,
+//                   ),
+//                 ),
+//                 statusChip(order["status"]!),
+//               ],
+//             ),
+//             const SizedBox(height: 8),
 
-            // Row 2: Address
-            Row(
-              children: [
-                const Icon(Icons.location_on, size: 18, color: Colors.grey),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    order["address"]!,
-                    style: GoogleFonts.poppins(fontSize: 14),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
+//             // Row 2: Address
+//             Row(
+//               children: [
+//                 const Icon(Icons.location_on, size: 18, color: Colors.grey),
+//                 const SizedBox(width: 4),
+//                 Expanded(
+//                   child: Text(
+//                     order["address"]!,
+//                     style: GoogleFonts.poppins(fontSize: 14),
+//                     maxLines: 2,
+//                     overflow: TextOverflow.ellipsis,
+//                   ),
+//                 ),
+//               ],
+//             ),
+//             const SizedBox(height: 12),
 
-            // Row 3: Phone icon aligned right
-            Align(
-              alignment: Alignment.centerRight,
-              child: IconButton(
-                icon: const Icon(Icons.phone, color: Colors.green),
-                onPressed: () => showCallConfirmation(context, order["phone"]!),
-              ),
-            ),
+//             // Row 3: Phone icon aligned right
+//             Align(
+//               alignment: Alignment.centerRight,
+//               child: IconButton(
+//                 icon: const Icon(Icons.phone, color: Colors.green),
+//                 onPressed: () => showCallConfirmation(context, order["phone"]!),
+//               ),
+//             ),
 
-            // Row 4: ETA, Price, and Action button
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // ETA column
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "ETA",
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      order["eta"]!,
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+//             // Row 4: ETA, Price, and Action button
+//             Row(
+//               crossAxisAlignment: CrossAxisAlignment.center,
+//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//               children: [
+//                 // ETA column
+//                 Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     Text(
+//                       "ETA",
+//                       style: GoogleFonts.poppins(
+//                         fontSize: 13,
+//                         color: Colors.grey[600],
+//                       ),
+//                     ),
+//                     const SizedBox(height: 4),
+//                     Text(
+//                       order["eta"]!,
+//                       style: GoogleFonts.poppins(
+//                         fontSize: 16,
+//                         fontWeight: FontWeight.bold,
+//                       ),
+//                     ),
+//                   ],
+//                 ),
 
-                // Price
-                Text(
-                  order["price"]!,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
+//                 // Price
+//                 Text(
+//                   order["price"]!,
+//                   style: GoogleFonts.poppins(
+//                     fontSize: 16,
+//                     fontWeight: FontWeight.w600,
+//                     color: Colors.black87,
+//                   ),
+//                 ),
 
-                // Action button
-                if (order["status"] == "New")
-                  actionButton("Accept", Colors.green, () {
-                    showActionDialog("New", order["id"]!, context);
-                  }),
-                if (order["status"] == "Accepted")
-                  actionButton("Deliver", Colors.orange, () {
-                    showActionDialog("Accepted", order["id"]!, context);
-                  }),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+//                 // Action button
+//                 if (order["status"] == "New")
+//                   actionButton("Accept", Colors.green, () {
+//                     showActionDialog("New", order["id"]!, context);
+//                   }),
+//                 if (order["status"] == "Accepted")
+//                   actionButton("Deliver", Colors.orange, () {
+//                     showActionDialog("Accepted", order["id"]!, context);
+//                   }),
+//               ],
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }

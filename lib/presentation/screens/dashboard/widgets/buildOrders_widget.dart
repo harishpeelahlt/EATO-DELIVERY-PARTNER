@@ -263,9 +263,16 @@ class _BuildOrdersState extends State<BuildOrders> {
                 const SizedBox(height: 16),
               ],
 
-              /// Action Button (Pick Up / Deliver)
+              /// Action Button (Pick Up / Deliver / Reject / Return)
               Row(
                 children: [
+                  if (!isDelivered)
+                    actionButton("Reject", Colors.red, () {
+                      context.read<UpdateOrderStatusCubit>().updateOrderStatus(
+                            order.orderNumber.toString(),
+                            "DELIVERY_REJECTED ",
+                          );
+                    }),
                   const Spacer(),
                   if (["CONFIRMED", "PENDING", "OUT_FOR_DELIVERY"]
                       .contains(status))
@@ -276,11 +283,25 @@ class _BuildOrdersState extends State<BuildOrders> {
                           );
                     }),
                   if (status == "PICKED_UP")
-                    actionButton("Deliver", Colors.orange, () {
-                      showOtpDialog(context, order);
-                    }),
+                    Row(
+                      children: [
+                        actionButton("Return", Colors.red, () {
+                          context
+                              .read<UpdateOrderStatusCubit>()
+                              .updateOrderStatus(
+                                order.orderNumber.toString(),
+                                "RETURNED",
+                              );
+                        }),
+                        const SizedBox(width: 8),
+                        actionButton("Deliver", Colors.orange, () {
+                          showOtpDialog(context, order);
+                        }),
+                      ],
+                    ),
                 ],
               ),
+
             ],
           ),
         ),
